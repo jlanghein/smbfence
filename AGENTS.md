@@ -58,7 +58,7 @@ def test_engagement():
 
     assert result.dict() == snapshot(
         {
-            "id": IsInt(),           # dynamic values via dirty-equals, preserved on --fix
+            "id": IsInt(),  # dynamic values via dirty-equals, preserved on --fix
             "name": "test",
             "created_at": IsDatetime(),
         }
