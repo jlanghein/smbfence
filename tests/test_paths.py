@@ -1,4 +1,7 @@
-from smbfence.paths import is_within, normalise, to_windows, unc
+import pytest
+
+from smbfence.errors import PathNotAllowedError
+from smbfence.paths import guard, is_within, normalise, to_windows, unc
 
 
 def test_normalise_accepts_either_separator():
@@ -42,3 +45,17 @@ def test_is_within_rejects_a_path_outside_every_root():
 
 def test_is_within_rejects_everything_when_no_root_is_allowed():
     assert not is_within("clients/acme", [])
+
+
+def test_guard_returns_the_normalised_path():
+    assert guard(r"\clients\acme\bank", ["clients/acme"]) == "clients/acme/bank"
+
+
+def test_guard_rejects_a_path_outside_the_roots():
+    with pytest.raises(PathNotAllowedError):
+        guard("clients/other", ["clients/acme"])
+
+
+def test_guard_names_the_offending_path():
+    with pytest.raises(PathNotAllowedError, match="clients/other"):
+        guard("clients/other", ["clients/acme"])

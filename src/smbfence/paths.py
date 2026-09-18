@@ -13,6 +13,8 @@ Nothing here touches a share, so all of it is tested without one.
 from collections.abc import Sequence
 from typing import Final
 
+from smbfence.errors import PathNotAllowedError
+
 WINDOWS_SEPARATOR: Final[str] = "\\"
 POSIX_SEPARATOR: Final[str] = "/"
 
@@ -45,3 +47,21 @@ def is_within(path: str, allowed: Sequence[str]) -> bool:
         candidate == normalise(root) or candidate.startswith(normalise(root) + POSIX_SEPARATOR)
         for root in allowed
     )
+
+
+PATH_NOT_ALLOWED: Final[str] = (
+    "{path!r} is outside every configured root. A share holds more than one "
+    "system's files, so this one reads only what it was told to."
+)
+
+
+def guard(path: str, allowed: Sequence[str]) -> str:
+    """The normalised path, or `PathNotAllowedError` if it is out of bounds.
+
+    Every path reaching the share passes through here. Returning the normalised
+    form rather than `None` is what makes that enforceable: a caller cannot use
+    a path it did not get back from this function.
+    """
+    if not is_within(path, allowed):
+        raise PathNotAllowedError(PATH_NOT_ALLOWED.format(path=path))
+    return normalise(path)
