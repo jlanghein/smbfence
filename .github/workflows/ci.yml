@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --extra dev
+      - name: ruff format
+        run: uv run --extra dev ruff format --check .
+      - name: ruff check
+        run: uv run --extra dev ruff check .
+      - name: ty check
+        run: uv run --extra dev ty check src
+      - name: pytest
+        run: uv run --extra dev pytest
