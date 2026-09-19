@@ -133,7 +133,7 @@ newest release every invocation, so the loop can change behaviour with nothing i
 repository changing. This has already bitten the other projects: `uvx ruff` resolved to
 0.16.2 against a lock at 0.15.9, and 0.16 began formatting Python snippets inside
 markdown, so `uvx ruff format --check .` reported `AGENTS.md` itself as unformatted.
-(Carried over from `../windee/CLAUDE.md`, which supersedes raven's `uvx`-based loop.)
+(Learned the hard way on a larger codebase; the pinned loop is the rule here from the start.)
 
 **Pre-commit checklist** (all must pass):
 - [ ] `ruff format .` — no files reformatted
