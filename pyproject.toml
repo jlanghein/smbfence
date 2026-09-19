@@ -19,6 +19,11 @@ dev = [
     "ruff>=0.15",
     "ty>=0.0.1a10",
 ]
+docs = [
+    "mkdocs-material>=9.5",
+    "mkdocstrings[python]>=0.26",
+    "ruff>=0.15",  # mkdocstrings uses it to format rendered signatures
+]
 
 [build-system]
 requires = ["hatchling"]
