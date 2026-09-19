@@ -49,10 +49,9 @@ if not config.is_configured:
 ## Read
 
 ```python
-import smbclient
-from smbfence import share_connection
+from smbfence import SmbClientBackend, share_connection
 
-with share_connection(config, smbclient, allowed=["clients/acme"]) as share:
+with share_connection(config, SmbClientBackend(), allowed=["clients/acme"]) as share:
     names = share.list_files("clients/acme/bank", suffix=".sta")
     for name in names:
         data = share.read_file(f"clients/acme/bank/{name}")
@@ -64,7 +63,7 @@ The session is registered on entry and dropped on exit — see
 ## Write
 
 ```python
-with share_connection(config, smbclient, allowed=["clients/acme"]) as share:
+with share_connection(config, SmbClientBackend(), allowed=["clients/acme"]) as share:
     share.write_file("clients/acme/out/invoice-2026-001.pdf", pdf_bytes)
 ```
 
@@ -82,7 +81,7 @@ from smbfence import (
 )
 
 try:
-    with share_connection(config, smbclient, allowed=roots) as share:
+    with share_connection(config, SmbClientBackend(), allowed=roots) as share:
         share.write_file(path, content)
 except ShareConfigError:
     ...  # nothing was attempted

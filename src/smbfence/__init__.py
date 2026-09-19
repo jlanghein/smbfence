@@ -1,6 +1,7 @@
 """A guarded SMB share client."""
 
-from smbfence.client import ShareClient, share_connection
+from smbfence.backend import SmbClientBackend
+from smbfence.client import ShareClient, SmbBackend, share_connection
 from smbfence.config import ShareConfig
 from smbfence.errors import (
     ConflictingContentError,
@@ -18,5 +19,7 @@ __all__ = [
     "ShareConfigError",
     "ShareError",
     "ShareUnreachableError",
+    "SmbBackend",
+    "SmbClientBackend",
     "share_connection",
 ]

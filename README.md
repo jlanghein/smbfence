@@ -4,12 +4,11 @@ A guarded SMB share client for Python: allowlisted paths, atomic writes, and one
 failure mode instead of three.
 
 ```python
-from smbfence import ShareConfig, share_connection
-import smbclient
+from smbfence import ShareConfig, SmbClientBackend, share_connection
 
 config = ShareConfig()  # reads SMB_HOST, SMB_SHARE, SMB_USER, SMB_PASSWORD
 
-with share_connection(config, smbclient, allowed=["clients/acme"]) as share:
+with share_connection(config, SmbClientBackend(), allowed=["clients/acme"]) as share:
     for name in share.list_files("clients/acme/bank", suffix=".sta", excluded_prefixes=["VMK_"]):
         data = share.read_file(f"clients/acme/bank/{name}")
 

@@ -54,7 +54,7 @@ caller that retries an unconfigured share on a timer will retry forever.
 ## The connection is dropped after every use
 
 ```python
-with share_connection(config, smbclient, allowed=roots) as share:
+with share_connection(config, SmbClientBackend(), allowed=roots) as share:
     ...
 # session reset here, always — including on exception
 ```

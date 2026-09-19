@@ -12,7 +12,7 @@ this is code whose failure modes matter.
 import logging
 from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
-from typing import IO, Any, Final, Protocol
+from typing import IO, Final, Literal, Protocol, runtime_checkable
 
 from smbfence import names, paths
 from smbfence.config import ShareConfig
@@ -23,14 +23,20 @@ logger: Final[logging.Logger] = logging.getLogger(__name__)
 TEMP_SUFFIX: Final[str] = ".partial"
 
 
+@runtime_checkable
 class SmbBackend(Protocol):
-    """The part of `smbclient` this library uses."""
+    """Everything this library needs from an SMB layer.
+
+    Declared in full, including session handling, so a backend missing a method
+    is a type error rather than a connection silently left open.
+    """
 
     def listdir(self, path: str) -> list[str]: ...
-    def open_file(self, path: str, mode: str) -> IO[Any]: ...
+    def open_file(self, path: str, mode: Literal["rb", "wb"]) -> IO[bytes]: ...
     def rename(self, src: str, dst: str) -> None: ...
-    def remove(self, path: str) -> None: ...
     def exists(self, path: str) -> bool: ...
+    def register_session(self, host: str, username: str, password: str, port: int) -> None: ...
+    def reset_connection_cache(self) -> None: ...
 
 
 class ShareClient:

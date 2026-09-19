@@ -1,7 +1,7 @@
 """An in-memory stand-in for the SMB backend."""
 
 import io
-from typing import IO, Any
+from typing import IO, Literal
 
 
 class FakeBackend:
@@ -13,7 +13,7 @@ class FakeBackend:
         self.resets = 0
         self.fail_with: Exception | None = None
 
-    def register_session(self, host: str, **kwargs: Any) -> None:
+    def register_session(self, host: str, username: str, password: str, port: int) -> None:
         if self.fail_with is not None:
             raise self.fail_with
         self.sessions.append(host)
@@ -31,7 +31,7 @@ class FakeBackend:
             if name.startswith(prefix) and "\\" not in name[len(prefix) :]
         ]
 
-    def open_file(self, path: str, mode: str) -> IO[Any]:
+    def open_file(self, path: str, mode: Literal["rb", "wb"]) -> IO[bytes]:
         if self.fail_with is not None:
             raise self.fail_with
         if "w" in mode:
@@ -42,9 +42,6 @@ class FakeBackend:
 
     def rename(self, src: str, dst: str) -> None:
         self.files[dst] = self.files.pop(src)
-
-    def remove(self, path: str) -> None:
-        self.files.pop(path, None)
 
     def exists(self, path: str) -> bool:
         return path in self.files

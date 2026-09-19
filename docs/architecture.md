@@ -32,16 +32,27 @@ Roughly two thirds of this library's logic is reachable without a network.
 ## The backend is a Protocol
 
 ```python
+@runtime_checkable
 class SmbBackend(Protocol):
     def listdir(self, path: str) -> list[str]: ...
-    def open_file(self, path: str, mode: str) -> IO[Any]: ...
+    def open_file(self, path: str, mode: Literal["rb", "wb"]) -> IO[bytes]: ...
     def rename(self, src: str, dst: str) -> None: ...
-    def remove(self, path: str) -> None: ...
     def exists(self, path: str) -> bool: ...
+    def register_session(self, host: str, username: str, password: str, port: int) -> None: ...
+    def reset_connection_cache(self) -> None: ...
 ```
 
-The client never imports `smbclient`. It takes whatever satisfies that Protocol, which in
-production is the `smbclient` module itself and in tests is a dictionary.
+The client never imports `smbclient`. It takes whatever satisfies that Protocol — in
+production `SmbClientBackend`, in tests a dictionary.
+
+!!! note "Why there is an adapter rather than passing `smbclient` directly"
+    `smbclient` spreads its functions across two namespaces: `listdir`, `open_file` and
+    `rename` sit on the module, but `exists` lives on `smbclient.path`. Passing the
+    module in satisfies a structural check and then fails at runtime on the first write.
+
+    `SmbClientBackend` is the one place that knows where each function actually lives,
+    and `tests/test_backend.py` asserts it satisfies the Protocol — a check an in-memory
+    fake cannot make, because the fake is complete by construction.
 
 ```python
 from smbfence import ShareClient
