@@ -1,4 +1,4 @@
-"""The errors a caller has to handle.
+"""The errors a caller has to handle, and the translation into them.
 
 There are four, and they are deliberately few. A caller reaching a file share
 wants to distinguish "I was not configured", "I asked for something I am not
@@ -7,6 +7,11 @@ and it is not mine" — and nothing finer. Everything the underlying library
 raises is translated into one of these, so no caller has to import
 `smbprotocol`'s exception tree to write a correct `except` clause.
 """
+
+from collections.abc import Iterator
+from contextlib import contextmanager
+
+from smbprotocol.exceptions import SMBException
 
 
 class ShareError(Exception):
@@ -41,3 +46,24 @@ class ConflictingContentError(ShareError):
     *different* bytes is somebody else's, and overwriting it is the one
     unrecoverable thing this library could do.
     """
+
+
+@contextmanager
+def translated(what: str) -> Iterator[None]:
+    """Turn whatever the SMB layer raises into `ShareUnreachableError`.
+
+    Three exception types reach this point and the third is not obvious.
+    `smbprotocol` catches the socket error during transport connection and
+    re-raises it as a plain `ValueError` naming the server, so a host that does
+    not resolve arrives as neither an `OSError` nor an `SMBException`. Without
+    this, an unreachable host raises straight past a caller's `except` clause —
+    and the caller records nothing, reports nothing, and leaves whatever it
+    feeds looking as though the share had simply been empty.
+
+    `ValueError` is broad, so keep the guarded block narrow: build paths
+    outside it and put only the calls into the SMB layer inside.
+    """
+    try:
+        yield
+    except (OSError, SMBException, ValueError) as exc:
+        raise ShareUnreachableError(f"{what}: {exc}") from exc
