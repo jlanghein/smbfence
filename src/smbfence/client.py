@@ -121,19 +121,14 @@ def share_connection(
     config.require()
     roots = tuple(allowed if allowed is not None else config.allowed_paths)
 
-    register = getattr(backend, "register_session", None)
-    reset = getattr(backend, "reset_connection_cache", None)
-
     with translated(f"connecting to {config.host}"):
-        if register is not None:
-            register(
-                config.host,
-                username=config.user,
-                password=config.password.get_secret_value(),
-                port=config.port,
-            )
+        backend.register_session(
+            config.host,
+            username=config.user,
+            password=config.password.get_secret_value(),
+            port=config.port,
+        )
     try:
         yield ShareClient(base=paths.unc(config.host, config.share), allowed=roots, backend=backend)
     finally:
-        if reset is not None:
-            reset()
+        backend.reset_connection_cache()
