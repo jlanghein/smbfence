@@ -36,8 +36,12 @@ src = ["src", "tests"]
 select = ["E", "F", "I", "N", "UP", "B", "S", "C4", "SIM", "RET", "PTH", "ARG"]
 ignore = ["S101"]
 
+[tool.ruff.lint.isort]
+known-first-party = ["smbfence", "tests"]
+
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["ARG001"]
+# A fake's signature must match the Protocol it stands in for, unused args and all.
+"tests/*" = ["ARG001", "ARG002"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
